@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MSU Neuro Jeopardy</title>
+<style>
+:root{--bg:#0d2635;--panel:#143a50;--tile:#1c5f82;--dim:#0f3045;--ink:#eaf4f8;--mute:#9dbccb;--gold:#f4c35a;--ok:#4cd3a0;--no:#ff8077;--line:#2f6683;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#e7f0f5;--panel:#fff;--dim:#cfdfe8;--ink:#10303f;--mute:#4a6a7a;--gold:#7a5200;--ok:#0b7a55;--no:#b3261e;--line:#9db9c8}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:14px 10px 28px}
+h1{font:700 clamp(1.3rem,4vw,2rem)/1.2 Georgia,"Noto Serif TC",serif;margin:0}
+.b{background:var(--tile);color:#fff;border:2px solid transparent;padding:.55rem 1rem;border-radius:6px;font:inherit;cursor:pointer}
+.b.g{background:var(--gold);color:#10202a;font-weight:700}
+.b.ok{background:transparent;border-color:var(--ok);color:var(--ok)}
+.b.no{background:transparent;border-color:var(--no);color:var(--no)}
+.b.pick{background:currentColor}.b.pick{color:#fff}
+.b:disabled{opacity:.5;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+#teams{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.team{background:var(--panel);border-left:4px solid var(--gold);padding:6px 14px;border-radius:6px;min-width:110px}
+.team span{display:block;color:var(--mute);font-size:.85rem}
+.team b{font:700 1.6rem/1.1 Georgia,serif;color:var(--gold)}
+#board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.cat{background:var(--panel);border-bottom:3px solid var(--gold);padding:10px 4px;text-align:center;font-weight:700;font-size:clamp(.68rem,1.9vw,1.1rem);display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere}
+.tile{background:var(--tile);color:#f4c35a;border:0;border-radius:6px;min-height:clamp(54px,12vh,96px);font:700 clamp(1.1rem,4vw,2.3rem) Georgia,serif;cursor:pointer}
+.tile:hover{filter:brightness(1.15)}
+.tile.used{background:var(--dim);cursor:default;filter:none}
+#setup{max-width:420px;margin:8vh auto;padding:0 6px}
+#setup input{width:100%;padding:.6rem;margin:6px 0;border-radius:6px;border:2px solid var(--line);background:var(--panel);color:var(--ink);font:inherit}
+#setup p{color:var(--mute)}
+#m{position:fixed;inset:0;background:var(--bg);overflow:auto;z-index:5;padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(24px + env(safe-area-inset-bottom,0px))}
+#m>div.in{max-width:760px;margin:0 auto}
+.mh{font:700 1.1rem Georgia,serif;color:var(--gold);margin-bottom:8px}
+.bar{height:8px;background:var(--dim);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--gold)}
+#clk{font:700 1.6rem Georgia,serif;text-align:right;color:var(--gold)}
+.qt{font-size:clamp(1.15rem,3.6vw,1.6rem);line-height:1.45;margin:6px 0 14px}
+.xr{max-width:100%;border-radius:6px;margin-bottom:12px}
+.opts{list-style:none;padding:0;margin:0 0 16px}
+.opts li{display:flex;gap:12px;align-items:baseline;border:2px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:clamp(1rem,3vw,1.25rem)}
+.opts li span{font:700 1rem Georgia,serif;color:var(--gold)}
+.opts li.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.opts li.no{opacity:.45}
+.sr{display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap}
+.sr span{flex:1 1 120px;font-weight:700}
+#ans{margin-bottom:16px}
+select{padding:.4rem;border-radius:6px;background:var(--panel);color:var(--ink);border:2px solid var(--line);font:inherit}
+.ex{background:var(--panel);border-left:4px solid var(--gold);padding:10px 14px;border-radius:6px;margin:0 0 12px;font-size:1.05rem}
+.b{min-height:44px}.opts li.bad{border-color:var(--no);background:color-mix(in srgb,var(--no) 18%,transparent)}
+@media(max-width:600px){main{padding:10px 6px 24px}#board{gap:4px}.tile{min-height:60px;font-size:1.05rem}.cat{font-size:.62rem;padding:8px 2px}.team{min-width:0;flex:1 1 40%;padding:4px 10px}.sr .b{flex:1 1 45%}.opts li{padding:12px}#cl,#rv,#go,#fin,#again{width:100%;margin-top:8px}}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none!important}}
+</style></head><body><main>
+<div id="setup">
+<h1>MSU Neuro Jeopardy</h1>
+<p><label>Mode <select id="md"><option value="0">Teams: score manually</option><option value="1">Solo: tap answers, scored automatically</option></select></label></p><p>Enter team names (Solo uses only the first). Blank fields are skipped.</p>
+<input class="tn" value="Team 1" aria-label="Team 1 name"><input class="tn" value="Team 2" aria-label="Team 2 name"><input class="tn" value="Team 3" aria-label="Team 3 name"><input class="tn" aria-label="Team 4 name" placeholder="Team 4 (optional)">
+<p><button class="b g" id="st">Start game</button></p>
+</div>
+<div id="game" hidden>
+<div class="top"><h1 id="rd"></h1><div><button class="b" id="hm">Home</button> <button class="b" id="bk" hidden>Back to Round 1</button> <button class="b g" id="nx"></button></div></div>
+<div id="teams"></div>
+<div id="board"></div>
+</div>
+</main>
+<div id="m" hidden></div>
+<script>
+const R=[{v:[100,200,300,400,500],c:[
+{n:"Urination",q:[
+["Which of the following is a skeletal muscle relaxer?",["Prazosin","Diazepam","Phenylpropanolamine","Phenoxybenzamine"],1,10],
+["What nerve supplies sympathetic stimulation to the bladder?",["Pelvic","Pudendal","Hypogastric","Peroneal"],2,10],
+["What is bethanechol's mechanism of action?",["Cholinergic antagonist","Cholinergic agonist","Alpha antagonist","Alpha agonist"],1,10],
+["Phenylpropanolamine is used to treat which condition?",["Internal sphincter constriction","Detrusor atony","External sphincter constriction","Hormone related incontinence"],0,15],
+["The loss of anal sphincter would indicate dysfunction of:",["Spinal cord segments L6, L7, S1","Spinal cord segments S1, S2, S3","Sciatic nerve","Peroneal nerve"],1,15]]},
+{n:"IVDD",q:[
+["Which breed is most likely to have a Type 1 disk herniation?",["Dachshund","Labrador","St. Bernard","Pit Bull"],0,10],
+["A patient that is paraplegic has…",["Partial motor function in the pelvic limbs","No motor function in the pelvic limbs","Paralysis of all limbs","Partial motor function in all limbs"],1,30],
+["Considering neurologic function and the ability to voluntarily void urine, when should this return in a paraplegic patient recovering after surgery for IVDD?",["A paraplegic patient should have control over their bladder","When CPs return","When motor returns","It is the last to recover"],2,30],
+["What would you look for on a radiograph of an IVDD patient?",["Lytic endplates","Sclerotic end plates","Lytic vertebral bodies","Narrowed disk space"],3,15],
+["What are the expected exam findings given the following?",["Increased pelvic limb and decreased forelimb reflexes","Increased pelvic and thoracic reflexes","Decreased pelvic and increased thoracic reflexes","Decreased pelvic and thoracic reflexes"],1,30,1]]},
+{n:"Seizures",q:[
+["What age do most idiopathic epileptics start seizing?",["<6 mo","1-5 yo","6-9 yo",">9 yo"],1,10],
+["Which diagnosis is the most likely in a 10 mo Yorkie with post-prandial seizures?",["Idiopathic epilepsy","Brain tumor","Hypoglycemia","PSS"],3,10],
+["Which of the following medications CANNOT be given to cats?",["Phenobarbital","Keppra","KBr","Zonisamide"],2,10],
+["Which of the following should have their serum levels closely monitored for hepatotoxicity?",["Phenobarbital","KBr","Keppra","Gabapentin"],0,10],
+["Which of the following has the shortest half-life?",["Phenobarbital","KBr","Keppra","Zonisamide"],2,10]]},
+{n:"Cranial Nerves",q:[
+["Which nerves are tested with the palpebral reflex?",["2 & 7","5 & 7","2 & 3","2 & 5"],1,10],
+["Which nerve controls the muscles of mastication?",["2","3","5","7"],2,10],
+["Which cranial nerves are tested with the gag reflex?",["5 & 7","2 & 3","12","9 & 10"],3,10],
+["What nerve controls the muscles of facial expression?",["2","5","7","12"],2,10],
+["Where are the cranial nerve nuclei for CN 6-12 located?",["Cerebrum","Midbrain","Pons","Medulla"],3,10]]},
+{n:"Reflexes",q:[
+["What nerve controls the patellar reflex?",["Sciatic","Femoral","Peroneal","Cranial tibial"],1,10],
+["What nerve is necessary to support weight at the elbow in the forelimb?",["Musculocutaneous","Axial","Radial","Ulnar"],2,10],
+["What spinal cord segments supply the sciatic nerve?",["L4-5","L6-7-S1","S1-3","All of the above"],1,10],
+["What nerve is associated with the anal sphincter?",["Sciatic","Peroneal","Pudendal","Pelvic"],2,10],
+["The withdrawal reflex also tests for pain perception.",["True","False"],1,10]]}]},
+{v:[200,400,600,800,1000],c:[
+{n:"N-M Diseases",q:[
+["A plantigrade stance in the cat is classic for which endocrinopathy?",["Cushing's syndrome","Hypothyroidism","Addison's disease","Diabetes mellitus"],3,10],
+["Which is the most likely diagnosis for a puppy presenting with pelvic limb extensor rigidity?",["Neosporosis","Hypokalemic myopathy","Botulism","Masticatory muscle myositis"],0,10],
+["What most accurately describes the pathophysiology of acquired myasthenia gravis?",["Decreased production of ACh receptors","Decreased release of ACh","Slowed propagation of the action potential","Auto-antibodies against ACh receptors"],3,30],
+["Which LMN disease will affect the cranial nerves?",["Tick paralysis","Botulism","Polyradiculoneuritis","Coonhound paralysis"],1,10],
+["Unilateral masticatory muscle atrophy is likely due to what cause?",["Chronic masticatory muscle myositis","Old age","Long term Cushing's","Solitary nerve sheath tumor of CN 5"],3,20]]},
+{n:"Vestibular",q:[
+["What is the most common reason for vestibular disease in young cats?",["Idiopathic vestibular disease","Cuterebra","Otitis media/interna","Brainstem tumor"],2,15],
+["Localize the lesion: right head tilt, circling right, nystagmus with fast phase to the left, Horner's right, CN 7 deficits right",["Right peripheral","Left peripheral","Right central","Left central"],0,30],
+["Localize: left head tilt, circling left, nystagmus with fast phase right, CP deficits left",["Right peripheral","Left peripheral","Right central","Left central"],3,30],
+["A dog with acute onset idiopathic vestibular disease will NOT have:",["Vomiting","Head tilt","Postural reaction deficits","Circling"],2,30],
+["A dog has paradoxical vestibular disease of the right caudal cerebellar peduncle. Which side are the postural reaction deficits?",["Right","Left"],0,30]]},
+{n:"MRI Imaging",q:[
+["Is fat bright or dark on T1 and T2 weighted imaging?",["Bright","Dark"],0,10],
+["What does a STIR image saturate out?",["CSF","Fat","Blood","Tumors"],1,10],
+["What does a FLAIR scan saturate out?",["CSF","Fat","Blood","Tumors"],0,10],
+["What scan is best to show blood?",["T2","T2-FS","T1","T2*/GRE"],3,10],
+["What scan will distinguish glioma from stroke?",["T2","T1","DWI","T2*"],2,10]]},
+{n:"Equine",q:[
+["How many lumbar vertebrae does a horse have?",["5","6","7","8"],1,10],
+["Horses are the only species which does THIS with sympathetic denervation.",["Sweat more","Develop Horner's","Develop dysautonomia","Develop a low heart rate"],0,15],
+["Which of the following would NOT cause urinary incontinence in a horse?",["EPM","Polyneuritis equi","Equine herpesvirus 1","Wobblers"],3,15],
+["Which breed is prone to juvenile seizures and occipito-atlanto-axial malformations?",["Quarter Horse","Thoroughbred","Arabian","Morgan"],2,30],
+["What is the most likely diagnosis of a horse with asymmetric clinical signs of the spine and brainstem along with focal muscle atrophy?",["ENAD","EPM","Herpes 4","Degenerative myeloencephalopathy"],1,30]]},
+{n:"Ruminants",q:[
+["Which is a common infectious disease causing brainstem signs in small ruminants?",["Rabies","Neospora","Listeria","Scrapie"],2,15],
+["Thiamine deficiency causes what?",["Leukoencephalomalacia","Polioencephalomalacia","Leukomyelomalacia","Poliomyelomalacia"],1,20],
+["A llama with paraparesis and eosinophilic CSF has…?",["LSA","Diskospondylitis","P. tenuis","IVDD"],2,20],
+["A 3 month old goat with acute progressive paraparesis with high protein & mononuclear CSF: top differential?",["Copper deficiency","Organophosphate toxicity","Caprine arthritis encephalitis virus","Diskospondylitis"],2,30],
+["How do you distinguish that a vesicular disease is not FMD?",["Cattle and sheep are affected","Only cattle are affected","Cattle, sheep and horses are affected","Only sheep are affected"],2,30]]}]}];
+const F={cat:"Non-IVDD spinal cord disease of small animals",q:["Which of the following is completely true?",["FCE and ANNPE present as acute onset paraparesis most commonly seen in small breed dogs","Wobblers is seen in young Dobermans and old Danes","The top differentials for a large breed dog <2yo with T3-L3 localization are diskospondylitis and nephroblastoma","The poster child for degenerative myelopathy is the Afghan Hound and Rottweiler"],2,60]};
+const E=[
+"Diazepam relaxes the striated muscle of the external urethral sphincter. Prazosin and phenoxybenzamine are alpha-blockers that relax the smooth muscle of the internal sphincter.",
+"Sympathetic input to the bladder travels in the hypogastric nerve and favors storage. The pelvic nerve is parasympathetic (voiding); the pudendal nerve is somatic.",
+"Bethanechol is a muscarinic (cholinergic) agonist that stimulates detrusor contraction. It is used for detrusor atony.",
+"Phenylpropanolamine is an alpha agonist that raises urethral sphincter tone, so it treats incontinence from a weak sphincter mechanism.",
+"The anal sphincter is supplied by the pudendal nerve, which arises from sacral segments S1-S3.",
+"Type 1 (Hansen) extrusion is seen in chondrodystrophic breeds such as the Dachshund, whose discs degenerate and mineralize early.",
+"Paraplegia means no voluntary motor function in the pelvic limbs. Deep pain may still be present or absent.",
+"Voluntary urination depends on the same voluntary pathways as motor function, so it returns when motor returns. Before that, the bladder may empty reflexively or by overflow.",
+"Narrowed disc space, a narrowed intervertebral foramen and mineralized disc material suggest IVDD. Plain films are not definitive.",
+"Atlantoaxial (AA) instability compresses the spinal cord at C1-C2, cranial to the cervical intumescence. All four limbs lose upper motor neuron inhibition, so both thoracic and pelvic limb reflexes are increased.",
+"Idiopathic epilepsy usually begins between 1 and 5 years of age. Onset outside this range raises concern for a structural or metabolic cause.",
+"A young small-breed dog with seizures after eating suggests a portosystemic shunt causing hepatic encephalopathy. Yorkies are predisposed.",
+"KBr causes severe bronchial (asthma-like) disease in cats, so it should not be used in them.",
+"Phenobarbital can cause hepatotoxicity with chronic use, so monitor liver values and serum drug levels.",
+"Levetiracetam (Keppra) has a half-life of only a few hours, so it is dosed frequently. Phenobarbital is measured in days and KBr in weeks.",
+"The palpebral reflex has a sensory limb through CN V (trigeminal) and a motor limb through CN VII (facial).",
+"The motor branch of CN V (trigeminal) supplies the muscles of mastication.",
+"The gag reflex is tested through CN IX and X (glossopharyngeal and vagus).",
+"CN VII (facial) supplies the muscles of facial expression.",
+"CN V is in the pons. The nuclei of CN VI-XII lie mainly in the medulla.",
+"The patellar reflex is mediated by the femoral nerve (L4-L6).",
+"The radial nerve supplies the triceps and the extensors of the limb. Radial paralysis means the animal cannot extend the elbow to bear weight.",
+"The sciatic nerve arises from L6, L7 and S1 in the dog.",
+"The pudendal nerve (S1-S3) supplies the anal sphincter.",
+"False. The withdrawal reflex is a spinal reflex and can be intact without pain perception. Pain perception needs a conscious response such as turning or vocalizing.",
+"Diabetic neuropathy in cats classically causes a plantigrade (hock-down) stance.",
+"Neospora caninum in puppies causes progressive pelvic limb extensor rigidity and contracture.",
+"Acquired myasthenia gravis is immune mediated: autoantibodies attack acetylcholine receptors at the neuromuscular junction.",
+"Botulism blocks acetylcholine release and commonly causes cranial nerve signs such as dysphagia and facial weakness. Tick paralysis and polyradiculoneuritis (coonhound paralysis, the same disease) usually spare the cranial nerves.",
+"A solitary nerve sheath tumor of CN V causes unilateral atrophy. Masticatory muscle myositis is typically bilateral.",
+"Otitis media/interna, including inflammatory polyps, is the most common cause in young cats.",
+"Right head tilt and circling, Horner's syndrome and CN VII deficits with normal postural reactions point to right peripheral vestibular disease.",
+"Postural reaction (CP) deficits mean brainstem involvement, so the lesion is central. The head tilt is to the left, so this is left central.",
+"Idiopathic vestibular disease is peripheral, so strength and postural reactions stay normal.",
+"In paradoxical vestibular disease the head tilt is opposite the lesion, but the postural reaction deficits stay on the same side as the lesion (right).",
+"Fat is hyperintense (bright) on both T1 and T2 weighted images.",
+"STIR suppresses the signal from fat.",
+"FLAIR suppresses the signal from CSF, which makes lesions next to fluid spaces easier to see.",
+"T2*/gradient echo is sensitive to susceptibility from blood (hemorrhage).",
+"DWI shows restricted diffusion in acute ischemic stroke, which gliomas generally do not show.",
+"Horses have 6 lumbar vertebrae.",
+"Horses with sympathetic denervation sweat on the affected side of the head and neck.",
+"Wobblers (cervical vertebral stenotic myelopathy) does not usually affect the bladder. EPM, EHV-1 and polyneuritis equi can.",
+"The Arabian is predisposed to juvenile epilepsy and occipito-atlanto-axial malformation.",
+"EPM (Sarcocystis neurona) causes asymmetric, multifocal signs that can include focal muscle atrophy.",
+"Listeria causes brainstem encephalitis (circling, facial paralysis) in small ruminants, often linked to silage.",
+"Thiamine deficiency causes polioencephalomalacia (cerebrocortical necrosis).",
+"Parelaphostrongylus tenuis (meningeal worm) causes eosinophilic CSF and asymmetric paraparesis in camelids.",
+"Caprine arthritis encephalitis virus causes leukoencephalomyelitis in kids about 2-4 months old, with high protein and mononuclear cells in the CSF.",
+"Vesicular stomatitis also affects horses, whereas FMD affects only cloven-hoofed animals.",
+"Nephroblastoma and diskospondylitis are top differentials for T3-L3 signs in young large-breed dogs. Wobblers affects young Great Danes and older Dobermans, and the DM poster children are the German Shepherd, Pembroke Corgi and Boxer."];
+const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let T=[],W=[],ri=0,used={},cur=null,tm=null,solo=0,ok=0,tot=0;
+function scores(){$('#teams').innerHTML=T.map(t=>`<div class="team"><span>${esc(t.n)}</span><b>${t.s}</b></div>`).join('')}
+function draw(){const r=R[ri];$('#rd').textContent=ri?'Round 2':'Round 1';$('#nx').textContent=ri?'Go to Final':'Go to Round 2';
+let h=r.c.map(c=>`<div class="cat">${c.n}</div>`).join('');
+for(let w=0;w<5;w++)r.c.forEach((c,i)=>{const k=ri+'-'+i+'-'+w;h+=used[k]?'<div class="tile used"></div>':`<button class="tile" data-k="${k}">${r.v[w]}</button>`});
+$('#board').innerHTML=h;$('#bk').hidden=!ri;scores()}
+function show(h){$('#m').innerHTML='<div class="in">'+h+'</div>';$('#m').hidden=false;$('#m').scrollTop=0}
+function hide(){clearInterval(tm);$('#m').hidden=true}
+function clock(s,cb){clearInterval(tm);let n=s;const f=$('#fill'),c=$('#clk');c.textContent=n;tm=setInterval(()=>{n--;c.textContent=n>0?n:"Time's up";f.style.width=(n/s*100)+'%';if(n<=0){clearInterval(tm);if(cb)cb()}},1000)}
+function body(q){return `<div id="clk"></div><div class="bar"><i id="fill" style="transition:width 1s linear"></i></div><p class="qt">${q[0]}</p>${q[4]?'<img class="xr" alt="Lateral cervical radiograph of a dog with atlantoaxial (AA) instability" src="data:image/jpeg;base64,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">':''}<ol class="opts">${q[1].map((o,i)=>`<li><span>${'ABCD'[i]}</span>${o}</li>`).join('')}</ol>`}
+const amt=(i,f)=>f?W[i]:cur.v;
+function reveal(q,f,x){clearInterval(tm);if(!f)used[cur.k]=1;
+document.querySelectorAll('.opts li').forEach((li,i)=>li.classList.add(i==q[2]?'ok':'no'));
+$('#ans').innerHTML=`<div class="ex"><b>Why:</b> ${x}</div>`+T.map((t,i)=>`<div class="sr"><span>${esc(t.n)}</span><button class="b ok" data-i="${i}" data-d="1">Correct +${amt(i,f)}</button><button class="b no" data-i="${i}" data-d="-1">Wrong −${amt(i,f)}</button></div>`).join('');
+$('#ans').onclick=e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;T[i].s+=b.dataset.d*amt(i,f);b.parentNode.querySelectorAll('button').forEach(x=>x.disabled=true);b.classList.add('pick');scores()}}
+function wire(q,f,x){document.querySelectorAll('.opts li').forEach((li,i)=>{li.tabIndex=0;li.setAttribute('role','button');li.style.cursor='pointer';li.onclick=()=>ans(q,f,x,i);li.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();ans(q,f,x,i)}}})}
+function ans(q,f,x,i){clearInterval(tm);const t=i<0?0:(i==q[2]?1:-1),a=f?W[0]:cur.v;tot++;if(t>0)ok++;T[0].s+=t*a;scores();
+document.querySelectorAll('.opts li').forEach((li,j)=>{li.onclick=li.onkeydown=null;li.removeAttribute('tabindex');li.style.cursor='';li.classList.add(j==q[2]?'ok':(j==i?'bad':'no'))});
+$('#ans').innerHTML=`<div class="ex"><b>${t>0?'Correct +'+a:t<0?'Wrong −'+a:"Time's up"}.</b> ${x}</div>`;const c=$('#cl');if(c)c.hidden=false;const n=$('#fin');if(n)n.hidden=false}
+function openQ(k){const[r,c,w]=k.split('-').map(Number),q=R[r].c[c].q[w],v=R[r].v[w];cur={k,v};
+show(`<div class="mh">${R[r].c[c].n} · ${v}</div>`+body(q)+'<div id="ans"><button class="b g" id="rv">Show answer</button></div><button class="b" id="cl">Back to board</button>');
+const x=E[r*25+c*5+w];if(solo){used[k]=1;$('#rv').remove();$('#cl').hidden=true;wire(q,0,x);clock(q[3],()=>ans(q,0,x,-1))}else{clock(q[3]);$('#rv').onclick=()=>reveal(q,0,x)}$('#cl').onclick=()=>{hide();draw()}}
+function wager(){show(`<div class="mh">Final Jeopardy</div><p class="qt">${F.cat}</p><p>Each team: choose what percent of your current score to wager.</p>`+T.map((t,i)=>`<div class="sr"><span>${esc(t.n)}(${t.s} pts)</span><select aria-label="${esc(t.n)} wager percent">${[0,25,50,75,100].map(p=>`<option>${p}</option>`).join('')}</select>%</div>`).join('')+'<button class="b g" id="go">Show question</button> <button class="b" id="cl">Back to board</button>');
+$('#cl').onclick=hide;
+$('#go').onclick=()=>{W=[...document.querySelectorAll('#m select')].map((s,i)=>Math.max(0,Math.round(T[i].s*s.value/100)));
+show('<div class="mh">Final Jeopardy</div>'+body(F.q)+'<div id="ans"><button class="b g" id="rv">Show answer</button></div><button class="b" id="fin">See results</button>');
+if(solo){$('#rv').remove();$('#fin').hidden=true;wire(F.q,1,E[50]);clock(F.q[3],()=>ans(F.q,1,E[50],-1))}else{clock(F.q[3]);$('#rv').onclick=()=>reveal(F.q,1,E[50])}$('#fin').onclick=result}}
+function result(){hide();const s=[...T].sort((a,b)=>b.s-a.s);show('<div class="mh">Final results</div>'+(solo?`<p>${ok} of ${tot} correct</p>`:'')+s.map((t,i)=>`<div class="sr"><span>${i+1}. ${esc(t.n)}</span><b class="mh">${t.s} pts</b></div>`).join('')+'<p><button class="b g" id="again">Play again</button> <button class="b" id="cl">Close</button></p>');
+$('#again').onclick=()=>location.reload();$('#cl').onclick=hide}
+$('#st').onclick=()=>{solo=+$('#md').value;T=[...document.querySelectorAll('.tn')].map(i=>i.value.trim()).filter(Boolean).map(n=>({n,s:0}));if(solo)T=[{n:T[0]?T[0].n:'Player',s:0}];if(!T.length)return;$('#setup').hidden=true;$('#game').hidden=false;draw()};
+$('#board').onclick=e=>{const b=e.target.closest('.tile[data-k]');if(b)openQ(b.dataset.k)};
+$('#hm').onclick=()=>{if(confirm('Return to the start page? Scores will be reset.'))location.reload()};$('#bk').onclick=()=>{ri=0;draw()};$('#nx').onclick=()=>{if(ri==0){ri=1;draw()}else wager()};
+</script></body></html>
